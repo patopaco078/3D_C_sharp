@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace _3D_only_c_sharp
 {
@@ -6,12 +7,17 @@ namespace _3D_only_c_sharp
     {
         static void Main(string[] args)
         {
+            Console.Title = "3d";
             bool juego_activo = true;
 
             //posición de camara
             double position_x = 5;
             double position_y = 5;
             double position_z = 5; //profundidad
+
+            //rotación de la pantalla
+            double rotation_X = 0;
+            double rotation_y = 0;
 
             //resolución pantalla
             float x = 110; //cantidad de pixeles en x
@@ -21,8 +27,8 @@ namespace _3D_only_c_sharp
             float roolX = 0;
 
             //mundo
-            double M_x = 30;
-            double M_y = 30;
+            double M_x = 300;
+            double M_y = 300;
             double M_z = 300;//profundidad
             bool[,,] mundo = new bool[Convert.ToInt32(M_x), Convert.ToInt32(M_y), Convert.ToInt32(M_z)];
 
@@ -32,12 +38,20 @@ namespace _3D_only_c_sharp
                 mundo[10, 10, dibujo] = true;
                 mundo[10, 0, dibujo] = true;
                 mundo[0, 0, dibujo] = true;
+                mundo[dibujo, 0, 20] = true;
             }
 
             mundo[5, 5, 20] = true;
 
+            Console.WindowHeight = Convert.ToInt32(y);
+            Console.WindowWidth = Convert.ToInt32(x) * 2;
+            Console.BufferHeight = Console.WindowHeight;
+            Console.BufferWidth = Console.WindowWidth;
+            Console.CursorVisible = false;
+
             while (juego_activo)
             {
+
                 //pantalla
                 for (roolX = 0; roolX <= x && roolY >= 0; roolX++)
                 {
@@ -51,29 +65,47 @@ namespace _3D_only_c_sharp
                     //Console.Write(roolX);
                     if (!(roolY < 0))
                     {
-                        Console.Write(pixel(pixelB(pantalla[Convert.ToInt32(roolX), Convert.ToInt32(roolY)], roolX, roolY, x, y, y, position_x, position_y, position_z, mundo, M_x, M_y, M_z)));
+                        Console.Write(pixel(pixelB(pantalla[Convert.ToInt32(roolX), Convert.ToInt32(roolY)], roolX, roolY, x, y, y, position_x, position_y, position_z, mundo, M_x, M_y, M_z, rotation_X, rotation_y)));
                     }
 
                 }
-                Console.WriteLine("hacia donde ira?");
+                Console.WriteLine(rotation_X);
+                Console.ReadKey();
+                //Thread.Sleep(1000);
 
-                string direction = Console.ReadLine();
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKey key = Console.ReadKey(true).Key;
+                    switch (key)
+                    {
+                        case ConsoleKey.S:
+                            position_z--;
+                            break;
+                        case ConsoleKey.A:
+                            position_x++;
+                            break;
+                        case ConsoleKey.D:
+                            position_x--;
+                            break;
+                        case ConsoleKey.W:
+                            position_z++;
+                            break;
+                        case ConsoleKey.Q:
+                            rotation_X += 5;
+                            break;
+                        case ConsoleKey.E:
+                            rotation_X -= 5;
+                            break;
+                    }//fin del switch (key)
+                }//fin del if (Console.Available) 
 
-                if (direction == "a")
+                if (rotation_X < 0)
                 {
-                    position_x--;
+                    rotation_X += 360;
                 }
-                if (direction == "d")
+                if (rotation_X >= 360)
                 {
-                    position_x++;
-                }
-                if (direction == "w")
-                {
-                    position_z++;
-                }
-                if (direction == "s")
-                {
-                    position_z--;
+                    rotation_X -= 360;
                 }
 
                 roolY = y - 1;
@@ -92,16 +124,28 @@ namespace _3D_only_c_sharp
             }
             return y;
         }
-        static bool pixelB(bool p, float x, float y, float totalX, float totalY, float totalZ, double position_x, double position_y, double position_z, bool[,,] mundo, double M_x, double M_y, double M_z)
+        static bool pixelB(bool p, float x, float y, float totalX, float totalY, float totalZ, double position_x, double position_y, double position_z, bool[,,] mundo, double M_x, double M_y, double M_z, double rotation_X, double rotation_Y)
         {
-            //Console.WriteLine("comienzo");
             p = false;
             bool a = true;
-
-            //angulo del rayo
-            double anguloX = (x * (1 / totalX)) - 0.5;
+            double angulo_de_visión = 90;
             double anguloY = (y * (1 / totalY)) - 0.5;
-            double anguloZ = 1;
+
+            double angulo_ray = ((angulo_de_visión / totalX) * x) - rotation_X;
+            if (angulo_ray < 0)
+            {
+                angulo_ray += 360;
+            }
+            if (angulo_ray >= 360)
+            {
+                angulo_ray -= 360;
+            }
+
+
+            double anguloX = Math.Cos(angulo_ray * Math.PI / 180);
+            double anguloZ = Math.Sin(angulo_ray * Math.PI / 180);
+
+
 
             while (a)
             {
