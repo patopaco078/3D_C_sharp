@@ -159,9 +159,9 @@ namespace _3D_only_c_sharp
                     }
                 }
 
-                position_x += anguloX;
-                position_y += anguloY;
-                position_z += anguloZ;
+                position_x += anguloX/2;
+                position_y += anguloY/2;
+                position_z += anguloZ/2;
 
                 //Console.Write("X = " + position_x + " | ");
                 //Console.Write("Y = " + position_y + " | ");
